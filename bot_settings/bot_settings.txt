@@ -1,0 +1,9 @@
+send_start_info_to_admins=True
+use_debug_log=True
+host_name=@dev
+can_run_gemini=True
+can_run_telebot=True
+public_gemini_api_key=INSERT_YOUR_GEMINI_API_KEY
+gas_url=INSERT_YOUR_GAS_URL
+Gemini_version=0.0.1_beta
+Gemini_tba=INSERT_YOUR_TELEGRAM_BOT_API_KEY
