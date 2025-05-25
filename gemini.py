@@ -279,6 +279,7 @@ def process_message(user, message):
                 button0 = types.InlineKeyboardButton(f"Ок", callback_data=f"current_screen>MEMORY")
                 markup.add(button0)
                 bot.send_message(message.from_user.id, f"Глубина памяти установлена на [{user.memory_deep}]",  reply_markup=markup)
+                save_user(message.from_user.id, user)
         except Exception as e:
             Debug.log_error(code_name, [f"Error in MEMORY_SET: {e}"])
             bot.send_message(message.from_user.id, f"Введите число >=2!")
@@ -334,14 +335,14 @@ def answer(call):
             markup = types.InlineKeyboardMarkup()
             button1 = types.InlineKeyboardButton(f"Нейросеть", callback_data=f"current_screen>AI_SETTINGS")
             markup.add(button1)
-            bot.edit_message_text(f"{code_name}, version: [{version}]", call.from_user.id,call.message.id,reply_markup=markup)
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"{code_name}, version: [{version}]", reply_markup=markup)
         elif target_screen == "AI_SETTINGS":
             markup = types.InlineKeyboardMarkup()
             button0 = types.InlineKeyboardButton(f"Назад", callback_data=f"current_screen>MANAGER")
             markup.add(button0)
             button2 = types.InlineKeyboardButton(f"Работа с памятью", callback_data=f"current_screen>MEMORY")
             markup.add(button2)
-            bot.edit_message_text("Настройки нейросети:", call.from_user.id,call.message.id,reply_markup=markup)
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = "Настройки нейросети:", reply_markup=markup)
         elif target_screen == "SET_MODEL":
             markup = types.InlineKeyboardMarkup()
             button0 = types.InlineKeyboardButton(f"Назад", callback_data=f"current_screen>AI_SETTINGS")
@@ -350,7 +351,7 @@ def answer(call):
                 for m in genai.list_models():
                     b = types.InlineKeyboardButton(m.name, callback_data=f"SET->{m.name}")
                     markup.add(b)
-                bot.edit_message_text(f"Текущая модель: {user.model}", call.from_user.id,call.message.id, reply_markup=markup)
+                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Текущая модель: {user.model}", reply_markup=markup)
             except Exception as e:
                 Debug.log_error(code_name, [f"Err in SET_MODEL: {e}"])
         elif target_screen == "MEMORY":
@@ -361,31 +362,24 @@ def answer(call):
             markup.add(button1)
             button3 = types.InlineKeyboardButton(f"Очистить память", callback_data=f"current_screen>MEMORY_CLEAR")
             markup.add(button3)
-            bot.edit_message_text(f"Память: {len(user.history)}/{user.memory_deep}", call.from_user.id,call.message.id, reply_markup=markup)
-        elif target_screen == "MEMORY_SHOW":
-            markup = types.InlineKeyboardMarkup()
-            button0 = types.InlineKeyboardButton(f"Назад", callback_data=f"current_screen>MEMORY")
-            markup.add(button0)
-            parts = [user.history[i:i+4000] for i in range(0, len(user.history), 4000)]
-            for p in parts:
-                bot.send_message(chat_id=call.chat.id, message_thread_id = call.message_thread_id, text = p, reply_markup=markup)
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Память: {len(user.history)}/{user.memory_deep}", reply_markup=markup)
         elif target_screen == "MEMORY_SET":
             markup = types.InlineKeyboardMarkup()
             button0 = types.InlineKeyboardButton(f"Назад", callback_data=f"current_screen>MEMORY")
             markup.add(button0)
-            bot.edit_message_text(f"Введите глубину памяти (не меньше 2)", call.from_user.id,call.message.id, reply_markup=markup)
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Введите глубину памяти (не меньше 2)", reply_markup=markup)
         elif target_screen == "MEMORY_CLEAR":
             user.history = []
             markup = types.InlineKeyboardMarkup()
             button0 = types.InlineKeyboardButton(f"Назад", callback_data=f"current_screen>MEMORY")
             markup.add(button0)
-            bot.edit_message_text(f"Память очищена", call.from_user.id,call.message.id, reply_markup=markup)
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Память очищена", reply_markup=markup)
     elif question[0] == "S":
         user.model = question[5:]
         markup = types.InlineKeyboardMarkup()
         button0 = types.InlineKeyboardButton(f"Назад", callback_data=f"current_screen>AI_SETTINGS")
         markup.add(button0)
-        bot.edit_message_text(f"Текущая модель: {user.model}", call.from_user.id,call.message.id, reply_markup=markup)
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text = f"Текущая модель: {user.model}", reply_markup=markup)
 
     save_user(call.from_user.id, user)
 
