@@ -136,6 +136,52 @@ class CORE:
             Debug.log_error(f"CORE ERROR: {str(e)}")
             return "Error"
     @staticmethod
+    def get_response_by_https_request(user,message,system_instruct,api_key)->str:
+        "Отправляет запрос в gemini, модели user.model по https, полезно если у вас нет библиотеки google.generativeai"
+
+        url = f'https://generativelanguage.googleapis.com/v1beta/models/{user.model}:generateContent?key={api_key}'
+
+        safety_settings = [
+            {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_NONE",
+            },
+            {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_NONE",
+            },
+            {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_NONE",
+            },
+            {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE",
+            }
+        ]
+
+        parameter = f"SYSTEM_INSTRUCTION={system_instruct},\nHISTORY: {str(user.history)},\nUSER_MESSAGE: {message.text}"
+
+        payload = {
+            "contents": [{"parts": [{"text": parameter}]}],
+            "safetySettings": safety_settings,
+        }
+
+        response = requests.post(url, json=payload)
+        if response.status_code == 200:
+            obj = response.json()
+            if obj.get("candidates") and len(obj["candidates"]) > 0 and len(obj["candidates"][0]["content"]["parts"]) > 0:
+                response_message = obj["candidates"][0]["content"]["parts"][0]["text"]
+            else:
+                Debug.log_error("CORE ERROR: got wrong response")
+        else:
+            response_message = f"CORE ERROR: response status code {response.status_code}"
+            if response.status_code == 400:
+                response_message+=" (maybe wrong location or api) "
+            Debug.log_error(response_message)
+        
+        return response_message
+    @staticmethod
     def get_setting(key):
         "Возвращает строку значения настройки по ключу key"
         try:
